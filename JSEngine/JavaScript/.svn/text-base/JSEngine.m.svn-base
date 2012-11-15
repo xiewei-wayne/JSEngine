@@ -1,0 +1,147 @@
+//
+//  JSEngine.m
+//  BOCiPadX
+//
+//  Created by Tracy E on 12-3-26.
+//  Copyright (c) 2012年 ChinaMWorld Inc. All rights reserved.
+//
+
+#import "JSEngine.h"
+#import "DOM.h"
+#import "DandelionWindow.h"
+#import "JSWindow.h"
+#import "JSDocument.h"
+#import "JSLocation.h"
+#import "JSScreen.h"
+#import "JSNavigator.h"
+#import "JSElement.h"
+#import "JSStyle.h"
+#import "JSXMLHttpRequest.h"
+#import "JSSessionStorage.h"
+#import "JSLocalStorage.h"
+#import "JSSecurityStorage.h"
+#import "JSConsole.h"
+
+@implementation JSEngine
+
+- (id)init{
+    self = [super init];
+    if (self) {
+    }
+    return self;
+}
+
+- (void)dealloc{
+    NSLog(@"%s",__FUNCTION__);
+    JSGarbageCollect(globalContext_);
+    [super dealloc];
+}
+
+
+- (JSGlobalContextRef)GlobalContext{
+    if (globalContext_ == NULL) {
+        globalContext_ = JSGlobalContextCreate(NULL);
+        
+//        printf("%p",globalContext_);
+        //add costom Class & methods to Gobal Context
+        JSObjectRef globalObject = JSContextGetGlobalObject(globalContext_);
+                
+        //add Window Object
+        JSStringRef window = JSStringCreateWithUTF8CString("Window");
+        JSObjectSetProperty(globalContext_, globalObject, window, JSObjectMakeConstructor(globalContext_, JSWindow_class(globalContext_), JSWindow_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(window);
+        
+        //add Document Object
+        JSStringRef document = JSStringCreateWithUTF8CString("Document");
+        JSObjectSetProperty(globalContext_, globalObject, document, JSObjectMakeConstructor(globalContext_, JSDocument_class(globalContext_), JSDocument_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(document);
+        
+        //add Element Object
+        JSStringRef element = JSStringCreateWithUTF8CString("Element");
+        JSObjectSetProperty(globalContext_, globalObject, element, JSObjectMakeConstructor(globalContext_, JSElement_class(globalContext_), JSElement_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(element);
+        
+        //add Location Object
+        JSStringRef location = JSStringCreateWithUTF8CString("Location");
+        JSObjectSetProperty(globalContext_, globalObject, location, JSObjectMakeConstructor(globalContext_, JSLocation_class(globalContext_), JSLocation_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(location);
+        
+        //add Navigator Object
+        JSStringRef navigator = JSStringCreateWithUTF8CString("Navigator");
+        JSObjectSetProperty(globalContext_, globalObject, navigator, JSObjectMakeConstructor(globalContext_, JSNavigator_class(globalContext_), JSNavigator_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(navigator);
+        
+        //add Screen Object
+        JSStringRef screen = JSStringCreateWithUTF8CString("Screen");
+        JSObjectSetProperty(globalContext_, globalObject, screen, JSObjectMakeConstructor(globalContext_, JSScreen_class(globalContext_), JSScreen_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(screen);
+                
+        //add Style Object
+        JSStringRef style = JSStringCreateWithUTF8CString("Style");
+        JSObjectSetProperty(globalContext_, globalObject, style, JSObjectMakeConstructor(globalContext_, JSStyle_class(globalContext_), JSStyle_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(style);
+        
+        //add XMLHttpRequest Object
+        JSStringRef httpRequest = JSStringCreateWithUTF8CString("XMLHttpRequest");
+        JSObjectSetProperty(globalContext_, globalObject, httpRequest, JSObjectMakeConstructor(globalContext_, JSXMLHttpRequest_class(globalContext_), JSXMLHttpRequest_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(httpRequest);
+
+        //add Console Object
+        JSStringRef console = JSStringCreateWithUTF8CString("Console");
+        JSObjectSetProperty(globalContext_, globalObject, console, JSObjectMakeConstructor(globalContext_, JSConsole_class(globalContext_), JSConsole_construct), kJSPropertyAttributeNone, NULL);
+        JSStringRelease(console);
+        
+        [self loadJavaScriptSource];
+    }
+    return globalContext_;
+}
+
+- (void)loadJavaScriptSource{
+    NSString *library = [NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"foundation" ofType:@"js"]  encoding:NSUTF8StringEncoding error:nil];    
+    [self execute:library];
+}
+
+- (NSString *)execute:(NSString *)script withObject:(id)thisObject{
+    if (!script || script.length == 0) {
+        NSLog(@"Exception: empty script!");
+        return nil;
+    }
+
+    JSObjectRef obj = JSObjectMake([self GlobalContext], JSElement_class([self GlobalContext]), thisObject);
+    JSStringRef scriptJS = JSStringCreateWithUTF8CString([script UTF8String]);
+    JSValueRef exception = NULL;
+    JSValueRef result = JSEvaluateScript([self GlobalContext], scriptJS, obj, NULL, 0, &exception);
+    
+    NSString *res = nil;
+    
+    if (!result) {
+        if (exception) {
+            JSStringRef exceptionArg = JSValueToStringCopy([self GlobalContext], exception, NULL);
+            NSString* exceptionRes = (NSString*)JSStringCopyCFString(kCFAllocatorDefault, exceptionArg); 
+            JSStringRelease(exceptionArg);
+            NSLog(@"Exception: %@", exceptionRes);
+            
+#ifdef __SHOW_ERROR_ALERT__
+            [[[[UIAlertView alloc] initWithTitle:@"JavaScript Error!" message:exceptionRes delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil] autorelease] show];
+#endif
+            [exceptionRes release];
+        }
+    }
+    else{
+        JSStringRef jstrArg = JSValueToStringCopy([self GlobalContext], result, NULL);
+        res = (NSString*)JSStringCopyCFString(kCFAllocatorDefault, jstrArg); 
+        JSStringRelease(jstrArg);
+    }
+    
+    JSStringRelease(scriptJS);
+    return [res autorelease];
+
+}
+
+
+
+- (NSString *)execute:(NSString *)script{
+    return [self execute:script withObject:NULL];
+ }
+
+@end

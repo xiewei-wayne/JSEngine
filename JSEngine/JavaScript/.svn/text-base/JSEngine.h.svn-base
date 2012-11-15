@@ -1,0 +1,33 @@
+//
+//  JSEngine.h
+//  BOCiPadX
+//
+//  Created by Tracy E on 12-3-26.
+//  Copyright (c) 2012年 ChinaMWorld Inc. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <JavaScriptCore/JavaScriptCore.h>
+#import "NSString+Dandelion.h"
+#import "JSFunction.h"
+
+@interface JSEngine : NSObject{
+    JSGlobalContextRef globalContext_;
+}
+- (JSGlobalContextRef)GlobalContext;
+- (NSString *)execute:(NSString *)script;
+- (NSString *)execute:(NSString *)script withObject:(id)thisObject;
+- (void)loadJavaScriptSource;
+@end
+
+#pragma mark ------------------------Utils----------------------
+static NSString* K_JSValueToNSString(JSContextRef ctx, JSValueRef value){
+    if (!ctx || !value) {
+        return nil;
+    }
+    JSStringRef str = JSValueToStringCopy(ctx, value, NULL);
+    
+    NSString *result = (NSString *)JSStringCopyCFString(kCFAllocatorSystemDefault, str);
+    JSStringRelease(str);
+    return [result autorelease];
+}

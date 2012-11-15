@@ -1,0 +1,112 @@
+//global instances
+var window = new Window();
+var console = new Console();
+var document = window.document;
+
+var navigator = window.navigator;
+
+var location = window.location;
+
+var screen = window.screen;
+
+var localStorage = window.localStorage;
+
+var sessionStorage = window.sessionStorage;
+
+var securityStorage = window.securityStorage;
+
+//global functions
+function alert(msg){
+    window.alert(msg);
+}
+
+function confirm(msg){
+    return window.confirm(msg);
+}
+
+//计时器
+function setInterval(func, time){
+   return window.setInterval(func, time);
+}
+
+function clearInterval(timer){
+    window.clearInterval(timer);
+}
+
+
+//自定义函数
+function dandelionHistoryForward(){
+    window.dandelionHistoryForward();
+}
+
+function dandelionHistoryBack(){
+    window.dandelionHistoryBack();
+}
+
+function dandelionWaveAnimation(){
+    window.dandelionWaveAnimation();
+}
+
+function dandelionShowPopUp(nodeID){
+    window.dandelionShowPopUp(nodeID);
+}
+
+function dandelionHiddenPopUp(){
+    window.dandelionHiddenPopUp();
+}
+
+//动画：块(block)整体动画下滑
+function dandelionScroll(targetId, height, animation){
+    window.dandelionScroll(targetId, height,animation);
+}
+
+function dandelionScrollBack(targetId){
+    window.dandelionScrollBack(targetId);
+}
+//常用功能重绘
+function commonFunctionsReload(fullListStr,selectedStr){
+    window.commonFunctionsReload(fullListStr,selectedStr);
+}
+
+//异步通讯
+function sendAjaxRequest(url,method,flag,headerFields,args,callBack,handleError,customErrorHandle){
+     window.sendAjaxRequest(url,method,flag,headerFields,args,callBack,handleError,customErrorHandle);
+}
+
+//同步通迅
+function sendAjaxRequestSyn(url,method,headerFields,args,handleError){
+    return window.sendAjaxRequestSyn(url,method,headerFields,args,handleError);
+}
+
+function dandelionCommonAlertError(result){
+    var json = result.toJSONString();
+    alert(json.response[i].error.message);
+}
+
+
+//选取本地相册
+/*暂不开放该接口
+function showImagePicker(element,callBack){
+    window.showImagePicker(element,callBack);
+}
+ */
+
+//客户端欢迎页常用功能跳转；
+function commonFunctionTo(title){
+    for (var i = 0 ; i < menuList.length; i++){
+        if(menuList[i] && menuList[i].text == title){
+            window.top.execute("menuTO(" + i + ")");
+        }
+    }
+}
+
+
+//定位一级导航栏
+function focusNavItem(title){
+    window.focusNavItem(title);
+}
+
+//定二级菜单下标值
+function focusMenuItem(index){
+    window.focusMenuItem(index);
+}

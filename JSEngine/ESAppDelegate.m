@@ -7,6 +7,7 @@
 //
 
 #import "ESAppDelegate.h"
+#import "JSEngine.h"
 
 @implementation ESAppDelegate
 
@@ -20,6 +21,30 @@
 {
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
     // Override point for customization after application launch.
+    
+    JSEngine *jsEngine = [[JSEngine alloc] init];
+    
+    NSString *about =
+    @"var me = new Object();                                                \
+      me.name = 'Tracy E';                                                  \
+      me.weibo = 'http://weibo.com/534072785';                              \
+      me.blog = 'http://www.cnblogs.com/tracy-e';                           \
+      me.github = 'https://github.com/tracy-e';                             \
+                                                                            \
+      me.toJSONString();                                                    \
+    ";
+    NSLog(@"%@",[jsEngine execute:about]);
+    
+    NSString *jsonString =
+    @"var view = new View();                                                \
+      view.setFrame(50,50,220,300);                                         \
+      view.backgroundColor='(50,100,150)';                                  \
+      view.addToWindow();                                                   \
+    " ;
+    [jsEngine execute:jsonString];
+    
+    [jsEngine release];
+    
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     return YES;
